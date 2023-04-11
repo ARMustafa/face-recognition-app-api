@@ -11,17 +11,26 @@ const image = require('./controllers/image');
 
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = 0
 
+//Database connection
 const db = knex({
   client: 'pg',
-  connection: {
-    connectionString : process.env.DATABASE_URL,
-    ssl: true,
-  }
+  connection: process.env.POSTGRES_URI
 });
 
 const app = express();
 
-app.use(cors())
+const whitelist = ['http://localhost:3000']
+const corsOptions = {
+  origin: function (origin, callback) {
+    if (whitelist.indexOf(origin) !== -1) {
+      callback(null, true)
+    } else {
+      callback(new Error('Not allowed by CORS'))
+    }
+  }
+}
+
+app.use(cors(corsOptions))
 app.use(express.json()); // latest version of exressJS now comes with Body-Parser!
 
 app.get('/', (req, res)=> { res.send('it is working!') })
@@ -31,6 +40,8 @@ app.get('/profile/:id', (req, res) => { profile.handleProfileGet(req, res, db)})
 app.put('/image', (req, res) => { image.handleImage(req, res, db)})
 app.post('/imageurl', (req, res) => { image.handleApiCall(req, res)})
 
-app.listen(process.env.PORT || 3000, ()=> {
-  console.log(`app is running on port ${process.env.PORT}`);
-})
+const PORT = process.env.PORT || 3000;
+
+app.listen(PORT, () => {
+  console.log(`app is running on port ${PORT}`);
+});
