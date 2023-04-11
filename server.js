@@ -14,23 +14,15 @@ process.env.NODE_TLS_REJECT_UNAUTHORIZED = 0
 //Database connection
 const db = knex({
   client: 'pg',
-  connection: process.env.POSTGRES_URI
+  connection: {
+    connectionString : process.env.DATABASE_URL,
+    ssl : true,
+  }
 });
 
 const app = express();
 
-const whitelist = ['http://localhost:3000']
-const corsOptions = {
-  origin: function (origin, callback) {
-    if (whitelist.indexOf(origin) !== -1) {
-      callback(null, true)
-    } else {
-      callback(new Error('Not allowed by CORS'))
-    }
-  }
-}
-
-app.use(cors(corsOptions))
+app.use(cors())
 app.use(express.json()); // latest version of exressJS now comes with Body-Parser!
 
 app.get('/', (req, res)=> { res.send('it is working!') })
